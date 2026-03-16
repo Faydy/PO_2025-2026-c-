@@ -93,19 +93,18 @@ public:
     }
 
     // GETTERI
-
-    // Getter de nume
-    const char* getNume() const{ return nume; }
-    // Getter de materie
+    const char* getNume() const { return nume; }
     const char* getMaterie() const { return materie; }
-    // Getter de varsta
     int getVarsta() const { return varsta; }
-    // Getter de salariu
     float getSalariu() const { return salariu; }
-    // Getter de telefon
     const char* getTelefon() const { return telefon; }
-    // Getter de email
     const char* getEmail() const { return email; }
+    const int getNumarElevi() const { return numarElevi; }
+    const Elev* getElev(int index) const {
+        if (index >= 0 && index < numarElevi)
+            return &elevi[index];
+        throw out_of_range("Eroare: indexul este out of range! \n");
+    }
 
     // SETTERI
 
@@ -140,6 +139,19 @@ public:
             delete[] email;
         email = new char[strlen(mail) + 1];
         strcpy(email, mail);
+    }
+    // Setter de elevi
+    void setElevi(const Elev* eleviNoi, int numar) {
+        delete[] elevi;
+        numarElevi = numar;
+        if (numar > 0 && eleviNoi != nullptr) {
+            elevi = new Elev[numar];
+            for (int i = 0; i < numarElevi; ++i)
+                elevi[i] = eleviNoi[i];
+        } else {
+            numarElevi = 0;
+            elevi = nullptr;
+        }
     }
     // Functie de adaugare elev
     void adaugareElev(const Elev& e) {

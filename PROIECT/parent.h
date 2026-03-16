@@ -11,6 +11,7 @@ class Parent {
 private:
     char* nume, *telefon;
     Elev* copil;
+    char sex;
 public:
     // Constructor fara parametrii
     Parent() {
@@ -21,9 +22,10 @@ public:
         strcpy(telefon, "N/A");
 
         copil = nullptr;
+        sex = 'M';
     }
     // Constructor cu toti parametrii
-    Parent(const char* nume, const char * telefon, Elev* copil) {
+    Parent(const char* nume, const char * telefon, Elev* copil, char sex) {
         this -> nume = new char[strlen(nume) + 1];
         strcpy(this -> nume, nume);
 
@@ -33,17 +35,22 @@ public:
         if (copil != nullptr) {
             this -> copil = new Elev(*(copil));
         } else this -> copil = nullptr;
+
+        this -> sex = sex;
     }
 
-    // Constructor cu un parametru
-    Parent(const char* nume): copil(nullptr) {
+    // Constructor cu un trei parametrii
+    Parent(const char* nume, const char* telefon, const char sex): copil(nullptr) {
         if (nume != nullptr) {
             this -> nume = new char[strlen(nume) + 1];
             strcpy(this -> nume, nume);
         }
         else this -> nume = nullptr;
-        telefon = new char[strlen("N/A") + 1];
-        strcpy(telefon, "N/A");
+
+        this -> telefon = new char[strlen(telefon) + 1];
+        strcpy(this -> telefon, telefon);
+
+        this -> sex = sex;
     }
 
     // Constructor cu 2 parametrii
@@ -60,6 +67,8 @@ public:
 
         telefon = new char[strlen("N/A") + 1];
         strcpy(telefon, "N/A");
+
+        sex = 'M';
     }
 
     //Constructor de copiere
@@ -73,6 +82,8 @@ public:
         if (parinte.copil != nullptr) {
             copil = new Elev(*(parinte.copil));
         } else copil = nullptr;
+
+        sex = parinte.sex;
     }
 
     // Operator de atribuire supraincarcat
@@ -94,6 +105,7 @@ public:
                 copil = new Elev(*(parinte.copil));
             else
                 copil = nullptr;
+            sex = parinte.sex;
 
         }
         return *this;
@@ -101,7 +113,7 @@ public:
 
     // Operator de stream: afisare
     friend ostream& operator<<(ostream& os, const Parent& p) {
-        os << "Nume: " << (p.nume != nullptr? p.nume: "N/A") << ", telefon: " << p.telefon
+        os << "Nume: " << (p.nume != nullptr? p.nume: "N/A") << ", sex: " << p.sex << ", telefon: " << p.telefon
         << ", copil: ";
         if (p.copil != nullptr)
             os << *(p.copil) << '\n';
@@ -125,6 +137,10 @@ public:
         p.telefon = new char[strlen(buffer) + 1];
         strcpy(p.telefon, buffer);
 
+        cout << "Sex: ";
+        is >> p.sex;
+        is.get();
+
         delete p.copil;
         p.copil = new Elev();
         cout << "Date elev: \n";
@@ -132,9 +148,10 @@ public:
         return is;
     }
     // GETTERI
-    const char* getNume() { return nume; }
-    const char* getTelefon() { return telefon; }
-    const Elev* getElev() { return copil; }
+    const char* getNume() const { return nume; }
+    const char* getTelefon() const { return telefon; }
+    const Elev* getElev() const { return copil; }
+    const char getSex() const{ return sex; }
 
     // SETTERI
     void setNume(const char* nume) {
@@ -152,14 +169,65 @@ public:
             delete copil;
         copil = new Elev(*(elev));
     }
+    void setSex(const char& sex) {
+        this -> sex = sex;
+    }
 
     // Operator de indexare (o sa returneze caracterul cu indexul i din nume)
     char& operator[](int index) {
-        if (index >= 0 && index < strlen(nume))
+        if (nume!= nullptr && index >= 0 && index < strlen(nume))
             return nume[index];
         throw out_of_range("EROARE: Indexul este out of range! \n");
     }
 
+    // Operatorul ++
+    // Prefixat
+    Parent& operator++() {
+        if (copil != nullptr) ++(*copil); // creste clasa copilului
+        return *this;
+    }
+    // Postfixat
+    Parent operator++(int) {
+        Parent copie(*this);
+        if (copil != nullptr) ++(*copil);
+        return copie;
+    }
+    // Operatorul --
+    // Prefixat
+    Parent& operator--() {
+        if (copil != nullptr) --(*copil);
+        return *this;
+    }
+    // Postfixat
+    Parent operator--(int) {
+        Parent copie(*this);
+        if (copil != nullptr) --(*copil);
+        return copie;
+    }
+    // Operatorul + (concateneaza numele)
+    Parent operator+(const char* sufix) {
+        Parent copie(*this);
+        char* numeNou = new char[strlen(copie.nume) + strlen(sufix) + 1];
+        strcpy(numeNou, copie.nume);
+        strcat(numeNou, sufix);
+        delete[] copie.nume;
+        copie.nume = new char[strlen(numeNou) + 1];
+        strcpy(copie.nume, numeNou);
+        delete[] numeNou;
+        return copie;
+    }
+    // Operatorul - (sterge copilul)
+    Parent operator-(int) const {
+        Parent copie(*this);
+        delete copie.copil;
+        copie.copil = nullptr;
+        return copie;
+    }
+    // Operatorul ==
+    bool operator==(const Parent& p) const { return strcmp(nume, p.nume) == 0; }
+    bool operator!=(const Parent& p) const { return !(p==*this); }
+    // Operatorul < (alfabetic dupa nume)
+    bool operator<(const Parent& p) const { return strcmp(nume, p.nume) < 0; }
 
     ~Parent() {
         delete[] nume;
